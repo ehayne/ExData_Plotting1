@@ -1,0 +1,1 @@
+# produces a line graph of global active power
