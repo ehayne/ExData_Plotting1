@@ -1,7 +1,5 @@
 # produces a line graph of energy submetering
-# # produces a bar graph of global active power
 
-# getData <- function() {
 require("data.table")
 library("data.table")
 
@@ -21,27 +19,42 @@ if (!file.exists(file_name)){
 }
 
 # read subset of data
-df <- fread(file_name, sep=";",na.strings="?")#,colClasses = c("character","character","numeric","numeric","numeric","numeric","numeric","numeric","numeric"))
+df <- fread(file_name, sep=";",na.strings="?")
 
 start_date <- "1/2/2007"
 end_date <- "2/2/2007"
 
 df.subset <- subset(df, Date == start_date | Date == end_date)
 
+df.subset$DateTime <- paste(df.subset$Date, df.subset$Time)
 df.subset$Date = as.Date(df.subset$Date,format="%d/%m/%Y")
 df.subset$Time = strptime(df.subset$Time, format = "%H:%M:%S")
-
-# }
-#
-# gather file data
-# getData
+df.subset$DateTime <- as.POSIXct(df.subset$DateTime, format="%d/%m/%Y %H:%M:%S")
 
 # plot graph
 png('plot3.png')
-hist(as.numeric(df.subset$Global_active_power),
-     main="Global Active Power",
-     xlab="Global Active Power (kilowatts)",
-     ylab="Frequency",
-     col="red")
+plot (df.subset$DateTime,
+      as.numeric(df.subset$Sub_metering_1),
+      type="n", # sets the x and y axes scales
+      xlab="",
+      ylab="Energy Sub Metering")
+
+lines(df.subset$DateTime,
+      as.numeric(df.subset$Sub_metering_1),
+      lwd=2.5) # adds a line for Sub_metering_1
+
+lines(df.subset$DateTime,
+      as.numeric(df.subset$Sub_metering_2),
+      col="red",
+      lwd=2.5) # adds a line for Sub_metering_2
+
+lines(df.subset$DateTime,
+      as.numeric(df.subset$Sub_metering_3),
+      col="blue",
+      lwd=2.5) # adds a line for Sub_metering_3
+legend("topright", # places a legend at the appropriate place
+       c("Sub_metering_1","Sub_metering_2","Sub_metering_3"), # puts text in the legend
+       lty=c(1,1), # gives the legend appropriate symbols (lines)
+       lwd=c(2.5,2.5),col=c("black","red","blue")) # gives the legend lines the correct color and width
 dev.off()
 
